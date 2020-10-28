@@ -5,13 +5,16 @@ bot = telebot.TeleBot('1201165565:AAElTl8352APspMEaZcQhjTQXqDkPdoxq9A')
 from telebot import types
 import dictionaries
 
-spb_way_text = dictionaries.spb_way1_text
-spb_way_img = dictionaries.spb_way2_img
+spb_way1_text = dictionaries.spb_way1_text
+spb_way1_img = dictionaries.spb_way1_img
 url = "https://raw.githubusercontent.com/ChKtn/BySteps/master/"
-url_p = "img_way2_saint_peterburg/"
+url_p1 = "img_way2_saint_peterburg/"
 i = 0
 len =  dictionaries.spb_way2_len
-#dictionaries.spb_way1_len
+spb_way2_text = dictionaries.spb_way2_text
+spb_way2_img = dictionaries.spb_way2_img
+len = dictionaries.spb_way2_len
+url_p2 = "img_way2_saint_peterburg/"
 
 
 @bot.message_handler(commands=["start"])
@@ -40,36 +43,26 @@ def callback_worker_spb(call):
 
 @bot.callback_query_handler(func=lambda call: call.data == "spb_w1" )
 def callback_worker_spb_w1(call):
-    global spb_way_text, spb_way_img, len, url_p
     bot.send_message(call.message.chat.id, "Средний маршрут")
-    spb_way_text = dictionaries.spb_way1_text
-    spb_way_img = dictionaries.spb_way1_img
-    len = dictionaries.spb_way1_len
-    url_p = "img_way1_saint_peterburg/"
-    keyboard = types.InlineKeyboardMarkup()
-    key_w1 = types.InlineKeyboardButton(text='Начинаем!', callback_data="next_place")
-    keyboard.add(key_w1)
-    bot.send_photo(call.from_user.id, url+url_p+spb_way_img[0], spb_way_text[0], reply_markup=keyboard)
+    keyboard_p = types.InlineKeyboardMarkup()
+    key_w1 = types.InlineKeyboardButton(text='Начинаем!', callback_data="next_place1")
+    keyboard_p.add(key_w1)
+    bot.send_photo(call.from_user.id, url+url_p1+spb_way1_img[0], spb_way1_text[0], reply_markup=keyboard_p)
 
 @bot.callback_query_handler(func=lambda call:  call.data == "spb_w2")
 def callback_worker_spb_w2(call):
-    global spb_way_text, spb_way_img, len, url_p
     bot.send_message(call.message.chat.id, "ТЕМАТИЧЕСКИЙ МАРШРУТ ""Пушкинский Петербург""")
-    spb_way_text = dictionaries.spb_way2_text
-    spb_way_img = dictionaries.spb_way2_img
-    len = dictionaries.spb_way2_len
-    url_p = "img_way2_saint_peterburg/"
     keyboard = types.InlineKeyboardMarkup()
-    key_w1 = types.InlineKeyboardButton(text='Начинаем!', callback_data="next_place")
+    key_w1 = types.InlineKeyboardButton(text='Начинаем!', callback_data="next_place2")
     keyboard.add(key_w1)
-    bot.send_photo(call.from_user.id, url + url_p + spb_way_img[0], spb_way_text[0], reply_markup=keyboard)
+    bot.send_photo(call.from_user.id, url + url_p2 + spb_way2_img[0], spb_way2_text[0], reply_markup=keyboard)
 
-@bot.callback_query_handler(func=lambda call: call.data=="next_place")
-def next_place(call):
+@bot.callback_query_handler(func=lambda call: call.data=="next_place1")
+def next_place1(call):
     global i
     i += 1
     if i == len:
-        bot.send_photo(call.from_user.id, url + spb_way_img[i], spb_way_text[i])
+        bot.send_photo(call.from_user.id, url + url_p1+ spb_way1_img[i], spb_way1_text[i])
         bot.send_message(call.message.chat.id, "Надеемся, что прогулка вам понравилась!")
         i=0
         start(call.message)
@@ -80,7 +73,25 @@ def next_place(call):
         keyboard_spb = types.InlineKeyboardMarkup()
         key_w1 = types.InlineKeyboardButton(text='Следующее место', callback_data="next_place")
         keyboard_spb.add(key_w1)
-        bot.send_photo(call.from_user.id, url +url_p+ spb_way_img[i], spb_way_text[i], reply_markup=keyboard_spb)
+        bot.send_photo(call.from_user.id, url +url_p1+ spb_way1_img[i], spb_way1_text[i], reply_markup=keyboard_spb)
+
+@bot.callback_query_handler(func=lambda call: call.data=="next_place2")
+def next_place2(call):
+    global i
+    i += 1
+    if i == len:
+        bot.send_photo(call.from_user.id, url+ url_p2+ spb_way2_img[i], spb_way2_text[i])
+        bot.send_message(call.message.chat.id, "Надеемся, что прогулка вам понравилась!")
+        i=0
+        start(call.message)
+    elif i>=len:
+        i = 0
+        start(call.message)
+    else:
+        keyboard_spb = types.InlineKeyboardMarkup()
+        key_w1 = types.InlineKeyboardButton(text='Следующее место', callback_data="next_place")
+        keyboard_spb.add(key_w1)
+        bot.send_photo(call.from_user.id, url +url_p2+ spb_way2_img[i], spb_way2_text[i], reply_markup=keyboard_spb)
 
 @bot.callback_query_handler(func=lambda call: call.data == "kazan")
 def callback_worker_kazan(call):
