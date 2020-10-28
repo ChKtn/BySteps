@@ -6,12 +6,16 @@ from telebot import types
 import dictionaries
 
 
-spb_way1_text = dictionaries.spb_way1_text
-spb_way1_img = dictionaries.spb_way1_img
-url = "https://raw.githubusercontent.com/ChKtn/BySteps/master/img_way1_saint_peterburg/"
+spb_way1_text = dictionaries.spb_way2_text
+spb_way1_img = dictionaries.spb_way2_img
+url = "https://raw.githubusercontent.com/ChKtn/BySteps/master/"
+url_p = "img_way1_saint_peterburg/"
+i = 0
+len =  dictionaries.spb_way2_len
+#dictionaries.spb_way1_len
 
 @bot.message_handler(commands=["start"])
-def get_text_messages(message):
+def start(message):
     bot.send_message(message.from_user.id, "Привет")  # Готовим кнопки
     # По очереди готовим текст и обработчик для каждого знака зодиака
     keyboard = types.InlineKeyboardMarkup()
@@ -35,16 +39,32 @@ def callback_worker(call):
     bot.send_message(call.from_user.id, text='Выбери маршрут', reply_markup=keyboard_spb)
 
 @bot.callback_query_handler(func=lambda call: call.data == "spb_w1")
-def callback_worker(call):
+def callback_worker_spb_w1(call):
     bot.send_message(call.message.chat.id, "Средний маршрут")
-    bot.send_photo(call.from_user.id, url+spb_way1_text[0], spb_way1_text[0])
+    keyboard = types.InlineKeyboardMarkup()
+    key_w1 = types.InlineKeyboardButton(text='Начинаем!', callback_data="next_place")
+    keyboard.add(key_w1)
+    bot.send_photo(call.from_user.id, url+url_p+spb_way1_img[0], spb_way1_text[0], reply_markup=keyboard)
+
+@bot.callback_query_handler(func=lambda call: call.data=="next_place")
+def next_place(call):
+    global i
+    i += 1
+    if i == len:
+        bot.send_photo(call.from_user.id, url + spb_way1_img[i], spb_way1_text[i])
+        bot.send_message(call.message.chat.id, "Надеемся, что прогулка вам понравилась!")
+        start(call.message)
+    keyboard_spb = types.InlineKeyboardMarkup()
+    key_w1 = types.InlineKeyboardButton(text='Следующее место', callback_data="next_place")
+    keyboard_spb.add(key_w1)
+    bot.send_photo(call.from_user.id, url +url_p+ spb_way1_img[i], spb_way1_text[i], reply_markup=keyboard_spb)
 
 @bot.callback_query_handler(func=lambda call: call.data == "spb_w2")
-def callback_worker(call):
+def callback_worker_spb_w2(call):
     bot.send_message(call.message.chat.id, "Второй маршрут")
 
 @bot.callback_query_handler(func=lambda call: call.data == "kazan")
-def callback_worker(call):
+def callback_worker_kazan(call):
         bot.send_message(call.message.chat.id, "Этот город мы скоро загрузим, а пока выбери другой город командой /start")
 
 # Запускаем постоянный опрос бота в Телеграме
