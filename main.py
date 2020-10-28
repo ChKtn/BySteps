@@ -5,8 +5,10 @@ bot = telebot.TeleBot('1201165565:AAElTl8352APspMEaZcQhjTQXqDkPdoxq9A')
 from telebot import types
 import dictionaries
 
+
 spb_way1_text = dictionaries.spb_way1_text
 spb_way1_img = dictionaries.spb_way1_img
+url = "https://raw.githubusercontent.com/ChKtn/BySteps/master/img_way1_saint_peterburg/"
 
 @bot.message_handler(commands=["start"])
 def get_text_messages(message):
@@ -35,8 +37,7 @@ def callback_worker(call):
 @bot.callback_query_handler(func=lambda call: call.data == "spb_w1")
 def callback_worker(call):
     bot.send_message(call.message.chat.id, "Средний маршрут")
-    img = open (u'/ByStepsBot/img_way1_saint_peterburg/s_w1_1.jpg', 'rb')
-    bot.send_photo(call.from_user.id, img)
+    bot.send_photo(call.from_user.id, url+spb_way1_text[0], spb_way1_text[0])
 
 @bot.callback_query_handler(func=lambda call: call.data == "spb_w2")
 def callback_worker(call):
