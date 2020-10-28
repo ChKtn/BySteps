@@ -38,21 +38,21 @@ def callback_worker_spb(call):
     keyboard_spb = types.InlineKeyboardMarkup()
     key_spb_w1 = types.InlineKeyboardButton(text='Средний маршрут (~1ч)', callback_data='spb_w1')
     keyboard_spb.add(key_spb_w1)
-    key_spb_w2 = types.InlineKeyboardButton(text='Длинный маршрут (~2ч)', callback_data='spb_w2')
+    key_spb_w2 = types.InlineKeyboardButton(text='Тематический маршрут "Пушкинский Петербург" (~2ч)', callback_data='spb_w2')
     keyboard_spb.add(key_spb_w2)
     bot.send_message(call.from_user.id, text='Выбери маршрут', reply_markup=keyboard_spb)
 
 @bot.callback_query_handler(func=lambda call: call.data == "spb_w1" )
 def callback_worker_spb_w1(call):
     bot.send_message(call.message.chat.id, "Средний маршрут")
-    keyboard_spb = types.InlineKeyboardMarkup()
-    key_w1 = types.InlineKeyboardButton(text='Начинаем!', callback_data="next_place1")
-    keyboard_spb.add(key_w1)
-    bot.send_photo(call.from_user.id, url+url_p1+spb_way1_img[0], spb_way1_text[0], reply_markup=keyboard_spb)
+    keyboard = types.InlineKeyboardMarkup()
+    k_w1 = types.InlineKeyboardButton(text='Начинаем!', callback_data="next_place1")
+    keyboard.add(k_w1)
+    bot.send_photo(call.from_user.id, url+url_p1+spb_way1_img[0], spb_way1_text[0], reply_markup=keyboard)
 
 @bot.callback_query_handler(func=lambda call:  call.data == "spb_w2")
 def callback_worker_spb_w2(call):
-    bot.send_message(call.message.chat.id, "ТЕМАТИЧЕСКИЙ МАРШРУТ ""Пушкинский Петербург""")
+    bot.send_message(call.message.chat.id, "Тематический маршрут Пушкинский Петербург")
     keyboard = types.InlineKeyboardMarkup()
     key_w1 = types.InlineKeyboardButton(text='Начинаем!', callback_data="next_place2")
     keyboard.add(key_w1)
@@ -63,8 +63,8 @@ def next_place1(call):
     global i
     i += 1
     if i == len:
-        bot.send_photo(call.from_user.id, url + url_p1+ spb_way1_img[i], spb_way1_text[i])
-        bot.send_message(call.message.chat.id, "Надеемся, что прогулка вам понравилась!")
+        bot.send_photo(call.from_user.id, url + url_p1 + spb_way1_img[i], spb_way1_text[i])
+        bot.send_message(call.message.chat.id, "На этом наше путешествие подходит к концу. Возвращайся скорее и исследуй новые маршруты :)\n\nЧто бы попробовать новые маршруты, используй /start")
         i = 0
         start(call.message)
     elif i >= len:
@@ -74,7 +74,9 @@ def next_place1(call):
         keyboard_spb = types.InlineKeyboardMarkup()
         key_w1 = types.InlineKeyboardButton(text='Следующее место', callback_data="next_place1")
         keyboard_spb.add(key_w1)
-        bot.send_photo(call.from_user.id, url +url_p1+ spb_way1_img[i], spb_way1_text[i], reply_markup=keyboard_spb)
+        key_w2 = types.InlineKeyboardButton(text='Показать карту', callback_data="spb_w1")
+        keyboard_spb.add(key_w2)
+        bot.send_photo(call.from_user.id, url + url_p1 + spb_way1_img[i], spb_way1_text[i], reply_markup=keyboard_spb)
 
 @bot.callback_query_handler(func=lambda call: call.data=="next_place2")
 def next_place2(call):
@@ -82,7 +84,7 @@ def next_place2(call):
     g += 1
     if g == len:
         bot.send_photo(call.from_user.id, url+ url_p2+ spb_way2_img[g], spb_way2_text[g])
-        bot.send_message(call.message.chat.id, "Надеемся, что прогулка вам понравилась!")
+        bot.send_message(call.message.chat.id, "На этом наше путешествие подходит к концу. Возвращайся скорее и исследуй новые маршруты :)\n\nЧто бы попробовать новые маршруты, используй /start")
         g=0
         start(call.message)
     elif g >= len:
@@ -92,11 +94,13 @@ def next_place2(call):
         keyboard_spb = types.InlineKeyboardMarkup()
         key_w1 = types.InlineKeyboardButton(text='Следующее место', callback_data="next_place2")
         keyboard_spb.add(key_w1)
+        key_w2 = types.InlineKeyboardButton(text='Показать карту', callback_data="spb_w2")
+        keyboard_spb.add(key_w2)
         bot.send_photo(call.from_user.id, url +url_p2+ spb_way2_img[g], spb_way2_text[g], reply_markup=keyboard_spb)
 
 @bot.callback_query_handler(func=lambda call: call.data == "kazan")
 def callback_worker_kazan(call):
-        bot.send_message(call.message.chat.id, "Этот город мы скоро загрузим, а пока выбери другой город командой /start")
+        bot.send_message(call.message.chat.id, "Этот город мы скоро загрузим, а пока можешь прогуляться по другому городу. Используй /start")
 
 # Запускаем постоянный опрос бота в Телеграме
 if __name__ == '__main__':
