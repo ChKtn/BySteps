@@ -1,129 +1,51 @@
-import telegram
-import time
-from telegram.ext import Updater
-from telegram.ext import CommandHandler
-from telegram.ext import MessageHandler, Filters, ConversationHandler, RegexHandler
-from telegram import ChatAction
-import logging
-from functools import wraps
+# -*- coding: utf-8 -*-
 import random
+import telebot
+bot = telebot.TeleBot('1201165565:AAElTl8352APspMEaZcQhjTQXqDkPdoxq9A')
+from telebot import types
 import dictionaries
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+spb_way1_text = dictionaries.spb_way1_text
+spb_way1_img = dictionaries.spb_way1_img
 
-logger = logging.getLogger(__name__)
+@bot.message_handler(commands=["start"])
+def get_text_messages(message):
+    bot.send_message(message.from_user.id, "Привет")  # Готовим кнопки
+    # По очереди готовим текст и обработчик для каждого знака зодиака
+    keyboard = types.InlineKeyboardMarkup()
+    key_spb = types.InlineKeyboardButton(text='Санкт-Петербург', callback_data='spb')
+    # И добавляем кнопку на экран
+    keyboard.add(key_spb)
+    key_kazan = types.InlineKeyboardButton(text='Казань', callback_data='kazan')
+    keyboard.add(key_kazan)
+    # Показываем все кнопки сразу и пишем сообщение о выборе
+    bot.send_message(message.from_user.id, text='Выбери город в котором хочешь погулять', reply_markup=keyboard)
 
-ACTION, ANSWER = range(2)
+    # Обработчик нажатий на кнопки
+@bot.callback_query_handler(func=lambda call: call.data == "spb")
+def callback_worker(call):
+    bot.send_message(call.message.chat.id, "Санкт-Петербург! Культурная столица России)")
+    keyboard_spb = types.InlineKeyboardMarkup()
+    key_spb_w1 = types.InlineKeyboardButton(text='Средний маршрут (~1ч)', callback_data='spb_w1')
+    keyboard_spb.add(key_spb_w1)
+    key_spb_w2 = types.InlineKeyboardButton(text='Длинный маршрут (~2ч)', callback_data='spb_w2')
+    keyboard_spb.add(key_spb_w2)
+    bot.send_message(call.from_user.id, text='Выбери маршрут', reply_markup=keyboard_spb)
 
-words = dictionaries.words
-type = dictionaries.type
-description = dictionaries.description
+@bot.callback_query_handler(func=lambda call: call.data == "spb_w1")
+def callback_worker(call):
+    bot.send_message(call.message.chat.id, "Средний маршрут")
+    img = open (u'/ByStepsBot/img_way1_saint_peterburg/s_w1_1.jpg', 'rb')
+    bot.send_photo(call.from_user.id, img)
 
-correct_word = 0
+@bot.callback_query_handler(func=lambda call: call.data == "spb_w2")
+def callback_worker(call):
+    bot.send_message(call.message.chat.id, "Второй маршрут")
 
-def start(bot, update):
-    bot.send_chat_action(chat_id=update.message.chat_id, action = telegram.ChatAction.TYPING)
-    time.sleep(1)
-    custom_keyboard = [['Learn new words'], ['Check yourself']]
-    reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard, one_time_keyboard=False)
-    bot.send_message(chat_id=update.message.chat_id, text="What do you want to do?", reply_markup=reply_markup)
-    return ACTION
+@bot.callback_query_handler(func=lambda call: call.data == "kazan")
+def callback_worker(call):
+        bot.send_message(call.message.chat.id, "Этот город мы скоро загрузим, а пока выбери другой город командой /start")
 
-def action(bot, update):
-    if(update.message.text == 'Learn new words'):
-        learn(bot, update)
-    elif(update.message.text == 'Check yourself'):
-        num = generate_correct_answer()
-        global correct_word 
-        correct_word = num
-        correct_num = random.randint(1, 4)
-        first_incorrect = words[random.randint(1, len(words) - 1)]
-        second_incorrect = words[random.randint(1, len(words) - 1)]
-        third_incorrect = words[random.randint(1, len(words) - 1)]
-        if(correct_num == 1):
-            custom_keyboard=[[words[correct_word]], [first_incorrect], 
-            [second_incorrect], [third_incorrect]]
-        elif(correct_num == 2):
-            custom_keyboard=[[first_incorrect], [words[correct_word]], 
-            [second_incorrect], [third_incorrect]]
-        elif(correct_num == 3):
-            custom_keyboard=[[first_incorrect], [second_incorrect], 
-            [words[correct_word]], [third_incorrect]]
-        elif(correct_num == 4):
-            custom_keyboard=[[first_incorrect], [second_incorrect], 
-            [third_incorrect], [words[correct_word]]]
-        reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard, one_time_keyboard=False)
-        bot.send_message(chat_id=update.message.chat_id, text=description[correct_word], reply_markup=reply_markup)
-        return ANSWER
-
-def generate_correct_answer():
-    num = random.randint(1, len(words) - 1)
-    return num
-
-def get_correct_word():
-    return correct_word
-
-def answer_check(bot, update):
-    correct_word = get_correct_word()
-    custom_keyboard = [['Learn new words'], ['Check yourself']]
-    reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard, one_time_keyboard=False)
-    if(update.message.text == words[correct_word]):
-        bot.send_chat_action(chat_id=update.message.chat_id , action = telegram.ChatAction.TYPING)
-        bot.send_message(chat_id=update.message.chat_id, text="*Correct!*", parse_mode=telegram.ParseMode.MARKDOWN)
-        bot.send_message(chat_id=update.message.chat_id, text="What do you want to do?", reply_markup=reply_markup)
-        return ACTION
-    else:
-        bot.send_chat_action(chat_id=update.message.chat_id , action = telegram.ChatAction.TYPING)
-        bot.send_message(chat_id=update.message.chat_id, text="*Incorrect!*" + " Correct answer is: " + words[correct_word], parse_mode=telegram.ParseMode.MARKDOWN)
-        bot.send_message(chat_id=update.message.chat_id, text="What do you want to do?", reply_markup=reply_markup)
-        return ACTION
-
-def learn(bot, update):
-    num = random.randint(1, len(words) - 1)
-    bot.send_chat_action(chat_id=update.message.chat_id , action = telegram.ChatAction.TYPING)
-    time.sleep(1)
-    bot.send_message(chat_id=update.message.chat_id, text="*"+ words[num]+"* - "+description[num]+"\n"+"\n_"+type[num]+"_", parse_mode=telegram.ParseMode.MARKDOWN)
-    bot.send_message(chat_id=update.message.chat_id, text="What is next?")
-
-def cancel(bot, update):
-    return ConversationHandler.END
-
-def send_action(action):
-    def decorator(func):
-        @wraps(func)
-        def command_func(*args, **kwargs):
-            bot, update = args
-            bot.send_chat_action(chat_id=update.effective_message.chat_id, action=action)
-            return func(bot, update, **kwargs)
-        return command_func
-    
-    return decorator
-
-def error(bot, update, error):
-    logger.warning('Update "%s" caused error "%s"', update, error)
-
-def main():
-    updater = Updater(token='TOKEN')
-
-    dispatcher = updater.dispatcher
-
-    conv_handler = ConversationHandler(
-        entry_points = [CommandHandler('start', start)],
-
-        states = {
-            ACTION: [RegexHandler('^(Learn new words|Check yourself)$', action)],
-            ANSWER: [MessageHandler(Filters.text, answer_check)]
-        },
-
-        fallbacks=[CommandHandler('cancel', cancel)]
-    )
-
-    dispatcher.add_handler(conv_handler)
-
-    dispatcher.add_error_handler(error)
-    
-    updater.start_polling()
-    updater.idle()
-
+# Запускаем постоянный опрос бота в Телеграме
 if __name__ == '__main__':
-    main()
+    bot.polling(none_stop=True)
